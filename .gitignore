@@ -1,0 +1,82 @@
+# Compiled source #
+###################
+*.com
+*.exe
+*.dll
+*.pdb
+*.cache
+*.obj
+*.suo
+*.user
+*.userprefs
+*.ilk
+*.nuspec
+*.targets
+*.nupkg
+*.snupkg
+*.props
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.tlog
+*.trg
+*.log
+*.sbr
+bin/
+obj/
+publish/
+[Oo]ut/
+
+# Visual Studio files #
+######################
+.vs/
+*.csproj.user
+*.sln.docstates
+*.sln.DotSettings.user
+
+# NuGet files #
+###############
+*.nupkg
+# Packages folder is used for old style csproj projects
+packages/
+
+# Tests #
+#######
+[Tt]est[Rr]esult*
+[Bb]uild[Ll]og.*
+_ReSharper.*
+TestAdapterCache/
+
+# Miscellaneous files #
+#####################
+*.bak
+*.tmp
+*.rpt
+*.orig
+*.swp
+*.dotsettings
+*.resharper.user*
+[Tt]humbs.db
+[Dd]esktop.ini
+
+# Deployment files #
+####################
+web.config
+parameters.xml
+*.ps1
+
+# Docker files #
+################
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# User-specific files
+#####################
+*.vs/OT.Assessment/.suo
+
+# Project specific files
+########################
+appsettings.Development.json
+appsettings.json
