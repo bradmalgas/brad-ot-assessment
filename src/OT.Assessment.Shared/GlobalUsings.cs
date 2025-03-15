@@ -4,3 +4,4 @@ global using Newtonsoft.Json;
 global using OT.Assessment.Shared.Messaging.Interfaces;
 global using OT.Assessment.Shared.Models;
 global using RabbitMQ.Client;
+global using Microsoft.EntityFrameworkCore;

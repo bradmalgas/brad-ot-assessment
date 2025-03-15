@@ -7,5 +7,8 @@ public class CasinoWagerEntity
     public string GameName { get; set; }
     public string Provider { get; set; }
     public decimal Amount { get; set; }
-    public DateTime CreatedDateTime { get; set; }
+    public DateTime WagerDateTime { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    public virtual PlayerEntity Player { get; set; }
 }

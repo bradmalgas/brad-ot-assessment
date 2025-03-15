@@ -2,14 +2,23 @@ namespace OT.Assessment.Shared.Models;
 
 public class CasinoWagerDTO
 {
-    [JsonPropertyName("wagerId")]
+    [JsonProperty("wagerId")]
     public Guid WagerId { get; set; }
-    [JsonPropertyName("game")]
+    [JsonProperty("game")]
     public string Game { get; set; }
-    [JsonPropertyName("provider")]
+    [JsonProperty("provider")]
     public string Provider { get; set; }
-    [JsonPropertyName("amount")]
+    [JsonProperty("amount")]
     public decimal Amount { get; set; }
-    [JsonPropertyName("createdDate")]
+    [JsonProperty("createdDate")]
     public DateTime CreatedDate { get; set; }
+}
+
+public class PaginatedResult<T>
+{
+    public List<T> Data { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int Total { get; set; }
+    public int TotalPages { get; set; }
 }

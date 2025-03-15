@@ -2,51 +2,51 @@ namespace OT.Assessment.Shared.Models;
 
 public class CasinoWagerEventDTO
 {
-    [JsonPropertyName("wagerId")]
+    [JsonProperty("wagerId")]
     public Guid WagerId { get; set; }
 
-    [JsonPropertyName("theme")]
+    [JsonProperty("theme")]
     public string Theme { get; set; }
 
-    [JsonPropertyName("provider")]
+    [JsonProperty("provider")]
     public string Provider { get; set; }
 
-    [JsonPropertyName("gameName")]
+    [JsonProperty("gameName")]
     public string GameName { get; set; }
 
-    [JsonPropertyName("transactionId")]
+    [JsonProperty("transactionId")]
     public string TransactionId { get; set; }
 
-    [JsonPropertyName("brandId")]
+    [JsonProperty("brandId")]
     public string BrandId { get; set; }
 
-    [JsonPropertyName("accountId")]
+    [JsonProperty("accountId")]
     public Guid AccountId { get; set; }
 
-    [JsonPropertyName("Username")]
+    [JsonProperty("Username")]
     public string Username { get; set; }
 
-    [JsonPropertyName("externalReferenceId")]
+    [JsonProperty("externalReferenceId")]
     public string ExternalReferenceId { get; set; }
 
-    [JsonPropertyName("transactionTypeId")]
+    [JsonProperty("transactionTypeId")]
     public string TransactionTypeId { get; set; }
 
-    [JsonPropertyName("amount")]
-    public double Amount { get; set; }
+    [JsonProperty("amount")]
+    public decimal Amount { get; set; }
 
-    [JsonPropertyName("createdDateTime")]
+    [JsonProperty("createdDateTime")]
     public DateTime CreatedDateTime { get; set; }
 
-    [JsonPropertyName("numberOfBets")]
+    [JsonProperty("numberOfBets")]
     public int NumberOfBets { get; set; }
 
-    [JsonPropertyName("countryCode")]
+    [JsonProperty("countryCode")]
     public string CountryCode { get; set; }
 
-    [JsonPropertyName("sessionData")]
+    [JsonProperty("sessionData")]
     public string SessionData { get; set; }
 
-    [JsonPropertyName("Duration")]
+    [JsonProperty("Duration")]
     public long Duration { get; set; }
 }

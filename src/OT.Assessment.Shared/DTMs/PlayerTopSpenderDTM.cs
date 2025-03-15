@@ -2,10 +2,10 @@ namespace OT.Assessment.Shared.Models;
 
 public class PlayerTopSpenderDTM
 {
-    [JsonPropertyName("accountId")]
+    [JsonProperty("accountId")]
     public Guid AccountId { get; set; }
-    [JsonPropertyName("username")]
+    [JsonProperty("username")]
     public string Username { get; set; }
-    [JsonPropertyName("totalAmountSpend")]
+    [JsonProperty("totalAmountSpend")]
     public decimal TotalAmountSpend { get; set; }
 }

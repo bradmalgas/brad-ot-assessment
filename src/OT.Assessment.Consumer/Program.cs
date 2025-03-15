@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using OT.Assessment.Shared.Data.Implementation;
+using OT.Assessment.Shared.Data.Interfaces;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config =>
@@ -10,7 +13,12 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         //configure services
-      
+
+        services.AddDbContext<CasinoWagersDbContext>(options => options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection"),
+        b => b.MigrationsAssembly("OT.Assessment.Consumer")));
+        services.AddScoped<ICasinoWagerRepository, CasinoWagerRepository>();
+        services.AddScoped<IPlayersRepository, PlayersRepository>();
+
     })
     .Build();
 
