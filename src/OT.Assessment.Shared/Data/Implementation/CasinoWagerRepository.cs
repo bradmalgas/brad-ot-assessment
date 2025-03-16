@@ -5,27 +5,30 @@ namespace OT.Assessment.Shared.Data.Implementation;
 public class CasinoWagerRepository : ICasinoWagerRepository
 {
     private readonly CasinoWagersDbContext _dbContext;
-    private readonly IPlayersRepository _playersRepository;
-    public CasinoWagerRepository(CasinoWagersDbContext dbContext, IPlayersRepository playersRepository)
+    public CasinoWagerRepository(CasinoWagersDbContext dbContext)
     {
         _dbContext = dbContext;
-        _playersRepository = playersRepository;
     }
 
-    public async Task AddWagerAsync(CasinoWagerEntity wager, PlayerEntity player)
+    public async Task AddWagerAsync(CasinoWagerEntity wager)
     {
-        var exisitngPlayer = await _playersRepository.GetPlayerByIdAsync(player.AccountId);
-
-        if (exisitngPlayer == null)
-        {
-            await _playersRepository.AddPlayerAsync(player);
-        }
         wager.CreatedAt = DateTime.UtcNow;
         _dbContext.CasinoWagers.Add(wager);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<PaginatedResult<CasinoWagerEntity>> GetWagersByPlayerAsync(Guid playerId, int pageSize, int page)
+    public async Task UpdateWagerAsync(CasinoWagerEntity wager)
+    {
+        _dbContext.CasinoWagers.Update(wager);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<CasinoWagerEntity?> GetWagerByIdAsync(Guid wagerId)
+    {
+        return await _dbContext.CasinoWagers.FindAsync(wagerId);
+    }
+
+    public async Task<PaginatedResult<CasinoWagerDTO>> GetWagersByPlayerAsync(Guid playerId, int pageSize, int page)
     {
         var query = _dbContext.CasinoWagers
             .Where(w => w.AccountId == playerId)
@@ -36,9 +39,17 @@ public class CasinoWagerRepository : ICasinoWagerRepository
         var data = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(w => new CasinoWagerDTO
+            {
+                WagerId = w.WagerId,
+                Game = w.GameName,
+                Provider = w.Provider,
+                Amount = w.Amount,
+                CreatedDate = w.WagerDateTime,
+            })
             .ToListAsync();
 
-        return new PaginatedResult<CasinoWagerEntity>
+        return new PaginatedResult<CasinoWagerDTO>
         {
             Data = data,
             Page = page,
@@ -46,15 +57,5 @@ public class CasinoWagerRepository : ICasinoWagerRepository
             Total = totalRecords,
             TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize),
         };
-    }
-
-    public async Task<List<PlayerEntity>> GetTopSpendersAsync(int count)
-    {
-        return await _dbContext.CasinoWagers
-        .GroupBy(w => w.AccountId)
-        .OrderByDescending(t => t.Sum(w => w.Amount))
-        .Take(count)
-        .Select(g => _dbContext.Players.Find(g.Key))
-        .ToListAsync();
     }
 }

@@ -21,4 +21,17 @@ public class PlayersRepository : IPlayersRepository
     {
         return await _dbContext.Players.FindAsync(playerId);
     }
+
+    Task<List<PlayerTopSpenderDTM>> IPlayersRepository.GetTopSpendersAsync(int count)
+    {
+        return _dbContext.Players
+        // .OrderByDescending(p => p.TotalSpend)
+        // .Take(count)
+        .Select(p => new PlayerTopSpenderDTM
+        {
+            AccountId = p.AccountId,
+            Username = p.Username,
+        })
+        .ToListAsync();
+    }
 }

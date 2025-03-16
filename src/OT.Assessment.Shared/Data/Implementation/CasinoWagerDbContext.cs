@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using OT.Assessment.Shared.Data.Interfaces;
 
 namespace OT.Assessment.Shared.Data.Implementation;
@@ -10,6 +11,8 @@ public class CasinoWagersDbContext : DbContext, ICasinoWagersDbContext
 
     public DbSet<CasinoWagerEntity> CasinoWagers { get; set; }
     public DbSet<PlayerEntity> Players { get; set; }
+
+    DatabaseFacade ICasinoWagersDbContext.Database => base.Database;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
