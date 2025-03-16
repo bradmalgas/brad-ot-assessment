@@ -1,4 +1,11 @@
-namespace OT.Assessment.Shared.Messaging.Implementation;
+using System.Text;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using OT.Assessment.Shared.Messaging;
+using OT.Assessment.Shared.Messaging.Interfaces;
+using RabbitMQ.Client;
+
+namespace OT.Assessment.App.Messaging.Implementation;
 
 public class CasinoWagerPublisher : ICasinoWagerPublisher
 {
@@ -11,7 +18,7 @@ public class CasinoWagerPublisher : ICasinoWagerPublisher
         _channelProvider = channelProvider;
     }
 
-    public async Task PublishAsync(CasinoWagerDTO casinoWager)
+    public async Task PublishAsync(CasinoWagerEventDTO casinoWager)
     {
         using var channel = await _channelProvider.CreateChannelAsync();
         var message = JsonConvert.SerializeObject(casinoWager);
