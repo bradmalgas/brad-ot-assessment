@@ -1,7 +1,7 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckl
 builder.Services.AddEndpointsApiExplorer();
@@ -26,10 +26,17 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+app.MapGet("/", () => "The API is running")
+.WithName("Health Check");
 
-app.UseAuthorization();
+//POST api/player/casinowager
+app.MapPost("api/player/casinowager", () => "Post wager works");
 
-app.MapControllers();
+//GET api/player/{playerId}/wagers
+app.MapGet("api/player/{playerId}/wagers", ([FromRoute] Guid playerId) => "Get player wagers works");
+
+//GET api/player/topSpenders?count=10
+app.MapGet("api/player/topSpenders", ([FromQuery] int count) => "Get top spenders works");
+
 
 app.Run();
