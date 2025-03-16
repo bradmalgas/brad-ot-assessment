@@ -2,10 +2,10 @@ namespace OT.Assessment.Shared.Messaging.Implementation;
 
 public class RabbitMqChannelFactory : IRabbitMqChannelFactory
 {
-    private readonly RabbitMQConnectionManager _connectionManager;
+    private readonly IRabbitMqConnectionManager _connectionManager;
     private readonly RabbitMqConfiguration _config;
 
-    public RabbitMqChannelFactory(IOptions<RabbitMqConfiguration> configuration, RabbitMQConnectionManager connectionManager)
+    public RabbitMqChannelFactory(IOptions<RabbitMqConfiguration> configuration, IRabbitMqConnectionManager connectionManager)
     {
         _connectionManager = connectionManager;
         _config = configuration.Value;

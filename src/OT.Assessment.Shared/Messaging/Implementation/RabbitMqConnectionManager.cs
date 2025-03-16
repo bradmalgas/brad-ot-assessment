@@ -1,10 +1,10 @@
 namespace OT.Assessment.Shared.Messaging.Implementation;
 
-public class RabbitMQConnectionManager : IRabbitMqConnectionManager
+public class RabbitMqConnectionManager : IRabbitMqConnectionManager
 {
     private readonly RabbitMqConfiguration _config;
     private IConnection? _connection;
-    public RabbitMQConnectionManager(IOptions<RabbitMqConfiguration> configuration)
+    public RabbitMqConnectionManager(IOptions<RabbitMqConfiguration> configuration)
     {
         _config = configuration.Value;
         InitializeConnectionAsync().Wait();
