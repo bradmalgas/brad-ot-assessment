@@ -11,9 +11,9 @@ public class BogusGenerator
 
         var themes = new[] { "ancient", "adventure", "wildlife", "jungle", "retro", "family", "crash" };
 
-        var testPlayers = new Faker<Player>()          
-           .StrictMode(true)          
-           .RuleFor(o => o.Username, f => f.Person.UserName)           /
+        var testPlayers = new Faker<Player>()
+           .StrictMode(true)
+           .RuleFor(o => o.Username, f => f.Person.UserName)
            .RuleFor(o => o.AccountId, f => f.Random.Guid()).Generate(1000);
 
 
@@ -47,7 +47,7 @@ public class BogusGenerator
             .RuleFor(o => o.Duration, f => f.Random.Long(10000, 3600000)).RuleFor(o => o.Amount, f => f.Random.Double(10, 50000))
             ;
 
-    
+
     }
 
     public List<CasinoWager> Generate()
