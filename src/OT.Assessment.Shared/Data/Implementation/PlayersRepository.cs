@@ -22,16 +22,19 @@ public class PlayersRepository : IPlayersRepository
         return await _dbContext.Players.FindAsync(playerId);
     }
 
-    Task<List<PlayerTopSpenderDTM>> IPlayersRepository.GetTopSpendersAsync(int count)
+    public async Task<List<PlayerTopSpenderDTM>> GetTopSpendersAsync(int count)
     {
-        return _dbContext.Players
-        // .OrderByDescending(p => p.TotalSpend)
-        // .Take(count)
-        .Select(p => new PlayerTopSpenderDTM
-        {
-            AccountId = p.AccountId,
-            Username = p.Username,
-        })
-        .ToListAsync();
+        return await _dbContext.Players
+            .Select(p => new PlayerTopSpenderDTM
+            {
+                AccountId = p.AccountId,
+                Username = p.Username,
+                TotalAmountSpend = _dbContext.CasinoWagers
+                    .Where(w => w.AccountId == p.AccountId)
+                    .Sum(w => w.Amount)
+            })
+            .OrderByDescending(p => p.TotalAmountSpend)
+            .Take(count)
+            .ToListAsync();
     }
 }
