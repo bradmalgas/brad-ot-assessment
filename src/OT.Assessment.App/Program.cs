@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using OT.Assessment.App.Services.Implementation;
 using OT.Assessment.App.Services.Interfaces;
 using OT.Assessment.Shared.Models;
-using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,17 +15,6 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-builder.Services.AddSingleton<IConnection>(sp =>
-{
-    var factory = new ConnectionFactory()
-    {
-        HostName = builder.Configuration["RabbitMq:HostName"],
-        UserName = builder.Configuration["RabbitMq:UserName"],
-        Password = builder.Configuration["RabbitMq:Password"],
-    };
-
-    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
-});
 builder.Services.AddScoped<ICasinoWagerPublishService, CasinoWagerPublishService>();
 
 var app = builder.Build();

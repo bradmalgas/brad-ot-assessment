@@ -8,12 +8,16 @@ namespace OT.Assessment.App.Services.Implementation;
 
 public class CasinoWagerPublishService : ICasinoWagerPublishService
 {
-    private readonly IConnection _connection;
     private readonly string _queueName;
-    public CasinoWagerPublishService(IConnection connection, IConfiguration configuration)
+    private readonly string _hostName;
+    private readonly string _userName;
+    private readonly string _password;
+    public CasinoWagerPublishService(IConfiguration configuration)
     {
-        _connection = connection;
         _queueName = configuration["RabbitMq:QueueName"];
+        _hostName = configuration["RabbitMq:HostName"];
+        _userName = configuration["RabbitMq:UserName"];
+        _password = configuration["RabbitMq:Password"];
     }
 
     public async Task PublishAsync(CasinoWagerRequest request)
@@ -28,7 +32,14 @@ public class CasinoWagerPublishService : ICasinoWagerPublishService
             AccountId = request.AccountId,
             Username = request.Username
         };
-        using var channel = await _connection.CreateChannelAsync();
+        var factory = new ConnectionFactory()
+        {
+            HostName = _hostName,
+            UserName = _userName,
+            Password = _password,
+        };
+        using var connection = await factory.CreateConnectionAsync();
+        using var channel = await connection.CreateChannelAsync();
         await channel.QueueDeclareAsync(queue: _queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto));
         await channel.BasicPublishAsync(exchange: string.Empty, routingKey: _queueName, body: body);
