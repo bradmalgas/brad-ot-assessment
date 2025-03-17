@@ -76,7 +76,7 @@ OT.Assessment/
 │   │   ├── PlayerTopSpenderDTM.cs
 │   ├── DTOs/
 │   │   ├── CasinoWagerDTO.cs
-│   │   ├── CasinoWagerEventDTO.cs
+│   │   ├── CasinoWagerEventDTM.cs
 │   ├── Entities/
 │   │   ├── CasinoWagerEntity.cs
 │   │   ├── PlayerEntity.cs
