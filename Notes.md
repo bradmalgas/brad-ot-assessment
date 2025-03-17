@@ -1,3 +1,29 @@
+# How to run application
+
+1. Ensure you have met all the [prerequisites](https://github.com/bradmalgas/brad-ot-assessment/tree/main#pre-requisites)
+2. Run the `OT.Assessment.App` project in a new terminal:
+
+```
+cd src/OT.Assessment.App
+dotnet run
+```
+
+3. In a separate terminal run the `OT.Assessment.Consumer` project:
+
+```
+cd src/OT.Assessment.Consumer
+dotnet run
+```
+
+3. With both projects running, you can begin the benchmark bu running the `OT.Assessment.Tester` project:
+
+```
+cd OT.Assessment.Tester
+dotnet run
+```
+
+You will now see the results of the benchmark in the terminal.
+
 # Key Components and Their Responsibilities
 
 ## `OT.Assessment.App` (API Application)
