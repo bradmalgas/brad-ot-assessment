@@ -8,7 +8,7 @@ public class CasinoWagerService : ICasinoWagerService
     private readonly ICasinoWagerRepository _wagerRepository;
     private readonly IPlayersRepository _playerRepository;
     private readonly ICasinoWagersDbContext _dbContext;
-    private readonly ILogger _logger;
+    private readonly ILogger<CasinoWagerService> _logger;
 
     public CasinoWagerService(ICasinoWagerRepository wagerRepository, IPlayersRepository playerRepository, ICasinoWagersDbContext context, ILogger<CasinoWagerService> logger)
     {
@@ -77,14 +77,14 @@ public class CasinoWagerService : ICasinoWagerService
             catch (DbUpdateConcurrencyException ex)
             {
                 transaction.Rollback();
-                Console.WriteLine($"Concurrency error: {ex.Message}");
+                _logger.LogInformation($"Concurrency error: {ex.Message}");
                 throw;
             }
             catch (Exception ex)
             {
 
                 transaction.Rollback();
-                Console.WriteLine($"Error processing wager: {ex.Message}");
+                _logger.LogInformation($"Error processing wager: {ex.Message}");
                 throw;
             }
         }
