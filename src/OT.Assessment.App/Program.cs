@@ -1,18 +1,15 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OT.Assessment.App.Messaging.Implementation;
 using OT.Assessment.App.Services.Implementation;
 using OT.Assessment.App.Services.Interfaces;
 using OT.Assessment.Shared.Data.Implementation;
 using OT.Assessment.Shared.Data.Interfaces;
-using OT.Assessment.Shared.Messaging;
-using OT.Assessment.Shared.Messaging.Implementation;
-using OT.Assessment.Shared.Messaging.Interfaces;
+using OT.Assessment.Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckl
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(options =>
@@ -20,35 +17,12 @@ builder.Services.AddSwaggerGen(options =>
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
-
 builder.Services.AddDbContext<CasinoWagersDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("OT.Assessment.Consumer")));
-builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection("RabbitMq"));
-builder.Services.AddScoped<ICasinoWagerRepository, CasinoWagerRepository>();
+builder.Services.AddScoped<ICasinoWagerPublishService, CasinoWagerPublishService>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
+builder.Services.AddScoped<ICasinoWagerRepository, CasinoWagerRepository>();
 builder.Services.AddScoped<ICasinoWagerApiService, CasinoWagerApiService>();
-builder.Services.AddSingleton<ICasinoWagerPublisher, CasinoWagerPublisher>();
-builder.Services.AddSingleton<IRabbitMqChannelFactory, RabbitMqChannelFactory>();
-builder.Services.AddSingleton<IRabbitMqConnectionManager, RabbitMqConnectionManager>();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAllOrigins",
-    builder =>
-    {
-        builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-    }
-    );
-});
-
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenLocalhost(5021, options => options.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2);
-    serverOptions.ListenLocalhost(7120, options =>
-    {
-        options.UseHttps();
-    });
-});
 
 var app = builder.Build();
 
@@ -64,12 +38,28 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("AllowAllOrigins");
+app.MapGet("/", () => "The API is running")
+.WithName("Health Check");
 
-app.UseHttpsRedirection();
+//POST api/player/casinowager
+app.MapPost("api/player/casinowager", async ([FromBody] CasinoWagerRequest request, ICasinoWagerPublishService publishService) =>
+{
+    await publishService.PublishAsync(request);
+})
+.WithName("PublishCasinoWager")
+.WithOpenApi();
 
-app.UseAuthorization();
+//GET api/player/{playerId}/wagers
+app.MapGet("api/player/{playerId}/wagers", async ([FromRoute] Guid playerId, [FromQuery] int pageSize, [FromQuery] int page, ICasinoWagerApiService apiService) =>
+{
+    return await apiService.GetWagersByPlayerAsync(playerId: playerId, pageSize: pageSize, page: page);
+});
 
-app.MapControllers();
+//GET api/player/topSpenders?count=10
+app.MapGet("api/player/topSpenders", async ([FromQuery] int count, ICasinoWagerApiService apiService) =>
+{
+    return await apiService.GetTopSpendersAsync(count);
+});
+
 
 app.Run();
