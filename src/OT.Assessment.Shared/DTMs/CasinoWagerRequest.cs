@@ -1,6 +1,6 @@
 namespace OT.Assessment.Shared.Models;
 
-public class CasinoWagerEventDTO
+public class CasinoWagerRequest
 {
     [JsonProperty("wagerId")]
     public Guid WagerId { get; set; }

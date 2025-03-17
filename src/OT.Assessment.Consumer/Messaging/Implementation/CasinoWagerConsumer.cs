@@ -34,7 +34,7 @@ public class CasinoWagerConsumer : ICasinoWagerConsumer
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
             Console.WriteLine($" [x] Received {message}");
-            var wager = JsonConvert.DeserializeObject<CasinoWagerEventDTO>(message);
+            var wager = JsonConvert.DeserializeObject<CasinoWagerEventDTM>(message);
 
             try
             {

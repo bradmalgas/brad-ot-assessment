@@ -18,7 +18,7 @@ public class CasinoWagerService : ICasinoWagerService
         _logger = logger;
     }
 
-    public async Task AddWagerAsync(CasinoWagerEventDTO dto)
+    public async Task AddWagerAsync(CasinoWagerEventDTM dto)
     {
         using (var transaction = _dbContext.Database.BeginTransaction())
         {
