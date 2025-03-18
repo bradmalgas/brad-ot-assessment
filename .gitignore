@@ -79,6 +79,5 @@ docker-compose*
 # Project specific files
 ########################
 appsettings.Development.json
-appsettings.json
 .DS_Store
 test/OT.Assessment.Tester/reports
