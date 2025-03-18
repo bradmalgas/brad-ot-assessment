@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using OT.Assessment.Consumer.Interfaces;
 using OT.Assessment.Consumer.Messaging.Implementation;
 using OT.Assessment.Consumer.Services.Implementation;
-using OT.Assessment.Shared.Consumer.Interfaces;
 using OT.Assessment.Shared.Data.Implementation;
 using OT.Assessment.Shared.Data.Interfaces;
 using OT.Assessment.Shared.Messaging;
@@ -27,10 +27,10 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IPlayersRepository, PlayersRepository>();
         services.AddSingleton<IRabbitMqConnectionManager, RabbitMqConnectionManager>();
         services.AddSingleton<IRabbitMqChannelFactory, RabbitMqChannelFactory>();
-        services.AddScoped<ICasinoWagerService, CasinoWagerService>();
+        services.AddScoped<ICasinoWagerConsumerService, CasinoWagerService>();
         services.AddSingleton<ICasinoWagerConsumer, CasinoWagerConsumer>();
         services.AddScoped<ICasinoWagersDbContext, CasinoWagersDbContext>();
-        services.AddSingleton<ICasinoWagerServiceFactory, CasinoWagerServiceFactory>();
+        services.AddSingleton<ICasinoWagerConsumerServiceFactory, CasinoWagerConsumerServiceFactory>();
     })
     .Build();
 
