@@ -15,10 +15,10 @@ cd src/OT.Assessment.Consumer
 dotnet run
 ```
 
-3. With both projects running, you can begin the benchmark bu running the `OT.Assessment.Tester` project:
+3. With both projects running, you can begin the benchmark by running the `OT.Assessment.Tester` project:
 
 ```
-cd OT.Assessment.Tester
+cd test/OT.Assessment.Tester
 dotnet run
 ```
 
