@@ -3,7 +3,7 @@ using OT.Assessment.Shared.Data.Interfaces;
 
 namespace OT.Assessment.Consumer.Services.Implementation;
 
-public class CasinoWagerService : ICasinoWagerService
+public class CasinoWagerService : ICasinoWagerConsumerService
 {
     private readonly ICasinoWagerRepository _wagerRepository;
     private readonly IPlayersRepository _playerRepository;

@@ -7,7 +7,6 @@ public class RabbitMqConnectionManager : IRabbitMqConnectionManager
     public RabbitMqConnectionManager(IOptions<RabbitMqConfiguration> configuration)
     {
         _config = configuration.Value;
-        InitializeConnectionAsync().Wait();
     }
 
     private async Task InitializeConnectionAsync()
@@ -22,11 +21,11 @@ public class RabbitMqConnectionManager : IRabbitMqConnectionManager
         _connection = await factory.CreateConnectionAsync();
     }
 
-    public IConnection GetConnection()
+    public async Task<IConnection> GetConnection()
     {
         if (_connection == null)
         {
-            throw new InvalidOperationException("Connection not established");
+            await InitializeConnectionAsync();
         }
         return _connection;
     }

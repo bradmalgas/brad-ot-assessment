@@ -1,6 +1,6 @@
 namespace OT.Assessment.Consumer.Services.Interfaces;
 
-public interface ICasinoWagerService : IDisposable
+public interface ICasinoWagerConsumerService : IDisposable
 {
     Task AddWagerAsync(CasinoWagerEventDTM dto);
 }

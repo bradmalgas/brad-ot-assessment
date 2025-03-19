@@ -1,4 +1,4 @@
-namespace OT.Assessment.Shared.Consumer.Interfaces;
+namespace OT.Assessment.Consumer.Interfaces;
 
 public interface ICasinoWagerConsumer
 {

@@ -1,8 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OT.Assessment.Consumer.Services.Implementation;
-using OT.Assessment.Shared.Consumer.Interfaces;
+using OT.Assessment.Consumer.Interfaces;
 using OT.Assessment.Shared.Messaging;
 using OT.Assessment.Shared.Messaging.Interfaces;
 using RabbitMQ.Client;
@@ -14,10 +13,10 @@ public class CasinoWagerConsumer : ICasinoWagerConsumer
 {
     private readonly RabbitMqConfiguration _config;
     private readonly IRabbitMqChannelFactory _channelProvider;
-    private readonly ICasinoWagerServiceFactory _casinoWagerServiceFactory;
+    private readonly ICasinoWagerConsumerServiceFactory _casinoWagerServiceFactory;
     private readonly ILogger<CasinoWagerConsumer> _logger;
 
-    public CasinoWagerConsumer(IOptions<RabbitMqConfiguration> configuration, IRabbitMqChannelFactory channelProvider, ICasinoWagerServiceFactory casinoWagerServiceFactory, ILogger<CasinoWagerConsumer> logger)
+    public CasinoWagerConsumer(IOptions<RabbitMqConfiguration> configuration, IRabbitMqChannelFactory channelProvider, ICasinoWagerConsumerServiceFactory casinoWagerServiceFactory, ILogger<CasinoWagerConsumer> logger)
     {
         _config = configuration.Value;
         _channelProvider = channelProvider;
