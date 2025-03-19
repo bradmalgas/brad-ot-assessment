@@ -133,7 +133,7 @@ OT.Assessment/
 - [https://www.rabbitmq.com/tutorials/tutorial-three-dotnet#bindings](https://www.rabbitmq.com/tutorials/tutorial-three-dotnet#bindings)
 - [https://www.rabbitmq.com/tutorials/tutorial-five-dotnet#putting-it-all-together](https://www.rabbitmq.com/tutorials/tutorial-five-dotnet#putting-it-all-together)
 
-## Part 2: Database and Entity Framework\*\*
+## Part 2: Database and Entity Framework
 
 My initial step was designing the database, ensuring it aligned with my entities. This naturally led to a code-first Entity Framework (EF) migration. I began by adding EF Core to my shared project and creating the `CasinoWagersDbContext`. This was a deliberate choice to keep database operations separate, reinforcing the domain-driven design principles I aimed for.
 
@@ -155,7 +155,7 @@ The real challenge was designing efficient database interactions. `AddWagerAsync
 - [https://stackoverflow.com/a/78185980](https://stackoverflow.com/a/78185980)
 - [https://learn.microsoft.com/en-us/answers/questions/2112283/how-to-resolve-efcore-8-saving-to-table-with-trigg](https://learn.microsoft.com/en-us/answers/questions/2112283/how-to-resolve-efcore-8-saving-to-table-with-trigg)
 
-## Part 3: Consumer, API, and Bonus Features\*\*
+## Part 3: Consumer, API, and Test Results
 
 Reflecting on the project's structure, I realized I had initially approached it somewhat backward. However, with the finish line in sight, I focused on moving forward. I also acknowledged a previous mistake: housing player existence checks within the `CasinoWagerRepository`. This violated the single responsibility principle, mixing data access with business logic. To rectify this, I created a service in the consumer project. This led me to identify a second error: keeping publisher and consumer logic in the shared project. Recognizing the workflow complexity this caused, I moved the consumer logic to the consumer project and preemptively fixed similar issues in the API project.
 
@@ -170,7 +170,7 @@ Next, I focused on optimizing NBomber tests. However, I consistently encountered
 As a final challenge, I decided to refactor the API for efficiency. Recognizing potential overhead in the original controller-based design, I created a new branch and reverted to a boilerplate API. I transitioned to a minimal API and established a performance baseline with empty endpoints. I ran the NBomb test as a benchmark and got the following results:
 
 ```
-────────────────────────────────────────────────────────────────── scenario stats ───────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────
 
 scenario: hello_world_scenario
   - ok count: 7000
@@ -248,7 +248,7 @@ Still no failures — this seemed like a good approach. I also confirmed that al
 After moving the publish logic into the `CasinoWagerPublishService`, I then ran another test to verify that the changes did not introduce any unnecessary overhead. The results were roughly the same:
 
 ```
-────────────────────────────────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────
 
 scenario: hello_world_scenario
   - ok count: 7000
@@ -272,7 +272,7 @@ load simulations:
 Lastly, I needed to add back the logic for the other API endpoints. These were housed in the `CasinoWagerApiService`. This was relatively straightforward as all the logic was in the repository already. One last test with all the pieces together:
 
 ```
-────────────────────────────────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────
 
 scenario: hello_world_scenario
   - ok count: 7000
@@ -302,3 +302,154 @@ I could finally take a sigh of relief, as I finally met all the requirements.
 - [https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.infrastructure.databasefacade?view=efcore-8.0](https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.infrastructure.databasefacade?view=efcore-8.0)
 - [https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-9.0](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-9.0)
 - [https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-9.0\&tabs=visual-studio](https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-9.0&tabs=visual-studio)
+
+## Part 4: API Optimizations (Post submission)
+
+Reflecting on the implementation of the RabbitMQ publisher, I realized I had room for improvement. Each call to `PublishAsync` spun up a new `ConnectionFactory`, opened a fresh connection, and created a brand new channel. This approach was not only resource-intensive—it also introduced significant latency due to the overhead of repeatedly establishing connections.
+
+I knew something had to change when the NBomber tests showed very high maximum latency. I decided to tackle this head-on by implementing the same logic as in the consumer: a **ConnectionManager** to maintain a singleton RabbitMQ connection, and a **ChannelFactory** to handle the lightweight creation of channels using that single connection. With these changes in place, the publisher no longer wasted precious cycles and resources on unnecessary connection setups.
+
+### Before the Refactoring
+
+Here’s a look at the original implementation, where each request incurred the cost of creating a new connection and channel:
+
+```csharp
+public async Task PublishAsync(CasinoWagerRequest request)
+{
+    var dto = new CasinoWagerEventDTM
+    {
+        WagerId = request.WagerId,
+        GameName = request.GameName,
+        Provider = request.Provider,
+        Amount = request.Amount,
+        CreatedDateTime = request.CreatedDateTime,
+        AccountId = request.AccountId,
+        Username = request.Username
+    };
+    var factory = new ConnectionFactory()
+    {
+        HostName = _hostName,
+        UserName = _userName,
+        Password = _password,
+    };
+    using var connection = await factory.CreateConnectionAsync();
+    using var channel = await connection.CreateChannelAsync();
+    await channel.QueueDeclareAsync(queue: _queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+    var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto));
+    await channel.BasicPublishAsync(exchange: string.Empty, routingKey: _queueName, body: body);
+    _logger.LogInformation($" [x] Sent casino wager to queue [ID: {request.WagerId}]");
+}
+```
+
+### After the Refactoring
+
+By leveraging the `RabbiqMqConnectionManager` and `RabbiqMqChannelFactory`, the updated code became leaner and far more efficient:
+
+```csharp
+public async Task PublishAsync(CasinoWagerRequest request)
+{
+    var dto = new CasinoWagerEventDTM
+    {
+        WagerId = request.WagerId,
+        GameName = request.GameName,
+        Provider = request.Provider,
+        Amount = request.Amount,
+        CreatedDateTime = request.CreatedDateTime,
+        AccountId = request.AccountId,
+        Username = request.Username
+    };
+    using var channel = await _channelProvider.CreateChannelAsync();
+    var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto));
+    await channel.BasicPublishAsync(exchange: _config.ExchangeName, routingKey: _config.RoutingKey, body: body);
+    _logger.LogInformation($" [x] Sent casino wager to queue [ID: {request.WagerId}]");
+}
+```
+
+I also relied on the default exchange but to make our code easily expandible, I specified an exchange (which is already binded due to the logic of the ChannelFactory).
+
+### Results and Reflections
+
+The impact was immediately clear in the NBomber test results:
+
+**Before refactoring:**
+
+```
+────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────
+
+scenario: hello_world_scenario
+  - ok count: 7000
+  - fail count: 0
+  - all data: 0 MB
+  - duration: 00:00:28
+
+load simulations:
+  - iterations_for_inject, rate: 500, interval: 00:00:02, iterations: 7000
+
+┌─────────────────────────┬─────────────────────────────────────────────────────┐
+│                    step │ ok stats                                            │
+├─────────────────────────┼─────────────────────────────────────────────────────┤
+│                    name │ global information                                  │
+│           request count │ all = 7000, ok = 7000, RPS = 250                    │
+│            latency (ms) │ min = 2.2, mean = 3.69, max = 126.67, StdDev = 3.74 │
+│ latency percentile (ms) │ p50 = 3.35, p75 = 3.98, p95 = 5.08, p99 = 6.84      │
+└─────────────────────────┴─────────────────────────────────────────────────────┘
+```
+
+**After refactoring (Test 1):**
+
+```
+────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────
+
+scenario: hello_world_scenario
+  - ok count: 7000
+  - fail count: 0
+  - all data: 0 MB
+  - duration: 00:00:28
+
+load simulations:
+  - iterations_for_inject, rate: 500, interval: 00:00:02, iterations: 7000
+
+┌─────────────────────────┬─────────────────────────────────────────────────────┐
+│                    step │ ok stats                                            │
+├─────────────────────────┼─────────────────────────────────────────────────────┤
+│                    name │ global information                                  │
+│           request count │ all = 7000, ok = 7000, RPS = 250                    │
+│            latency (ms) │ min = 1.39, mean = 2.52, max = 44.89, StdDev = 0.79 │
+│ latency percentile (ms) │ p50 = 2.43, p75 = 2.82, p95 = 3.4, p99 = 3.96       │
+└─────────────────────────┴─────────────────────────────────────────────────────┘
+
+```
+
+**After refactoring (Test 2):**
+
+```
+────────────────────────────────────────────────── scenario stats ──────────────────────────────────────────────────
+
+scenario: hello_world_scenario
+  - ok count: 7000
+  - fail count: 0
+  - all data: 0 MB
+  - duration: 00:00:28
+
+load simulations:
+  - iterations_for_inject, rate: 500, interval: 00:00:02, iterations: 7000
+
+┌─────────────────────────┬────────────────────────────────────────────────────┐
+│                    step │ ok stats                                           │
+├─────────────────────────┼────────────────────────────────────────────────────┤
+│                    name │ global information                                 │
+│           request count │ all = 7000, ok = 7000, RPS = 250                   │
+│            latency (ms) │ min = 1.34, mean = 2.53, max = 47.16, StdDev = 0.9 │
+│ latency percentile (ms) │ p50 = 2.43, p75 = 2.84, p95 = 3.49, p99 = 4.17     │
+└─────────────────────────┴────────────────────────────────────────────────────┘
+```
+
+- **Mean Latency** dropped from **3.69ms** to **2.53ms** (a reduction of about 31.5%).
+- **Max Latency** shrank from **126.67ms** down to **47.16ms** (a 62.8% improvement).
+- Even the **standard deviation** of latency was significantly lower (from 3.74ms to 0.9ms), meaning the responses were much more consistent.
+
+It was a relief to see such a substantial performance boost without compromising the stability of our publisher. This refactoring not only streamlined the resource consumption but also paved the way for smoother handling of high loads, ensuring that our API could meet the demands of production environments.
+
+Looking back, this was a crucial learning moment: sometimes, the simplest changes—like reusing a connection—can yield enormous benefits. With these improvements in place, I could confidently move forward knowing that the messaging backbone of our system was both robust and efficient.
+
+---
