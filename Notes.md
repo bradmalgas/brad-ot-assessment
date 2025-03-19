@@ -452,4 +452,19 @@ It was a relief to see such a substantial performance boost without compromising
 
 Looking back, this was a crucial learning moment: sometimes, the simplest changes—like reusing a connection—can yield enormous benefits. With these improvements in place, I could confidently move forward knowing that the messaging backbone of our system was both robust and efficient.
 
+## **Production-Ready Enhancements**
+
+- **More Robust Error Handling:** Implement better exception handling to prevent failures from disrupting message flow.
+- **Enhanced Logging:** Integrate logging with platforms like **Azure Application Insights** or **Logstash** for better monitoring and debugging.
+- **Load Balancing:** Introduce a load balancer to prevent API endpoints from being overwhelmed under high traffic conditions.
+- **Distributed Caching:** Utilize distributed caching mechanisms for frequently accessed data to reduce redundant processing and improve response times.
+
+## **Lessons Learned & Areas for Improvement**
+
+### **What Could Have Been Done Better?**
+
+- **Unit Testing from the Start:** Instead of relying on an API layer for testing, proper unit tests should have been incorporated throughout the development process.
+- **Better Version Control Practices:** I opted for rapid development and skipped using pull requests or breaking commits into smaller branches. While this worked for quick iteration, it would not be ideal in a real-world project where structured version control is crucial.
+- **Efficient Data Consumption:** From the beginning, I should have prioritized efficient consumption of all data from the tester application. Given that the system is designed to handle high volumes, this would have ensured optimal performance sooner.
+
 ---
