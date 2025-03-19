@@ -13,7 +13,7 @@ public class RabbitMqChannelFactory : IRabbitMqChannelFactory
 
     public async Task<IChannel> CreateChannelAsync()
     {
-        IConnection connection = _connectionManager.GetConnection();
+        IConnection connection = await _connectionManager.GetConnection();
         IChannel channel = await connection.CreateChannelAsync();
 
         await channel.ExchangeDeclareAsync(exchange: _config.ExchangeName, type: ExchangeType.Topic);
