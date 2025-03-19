@@ -5,6 +5,9 @@ using OT.Assessment.App.Services.Implementation;
 using OT.Assessment.App.Services.Interfaces;
 using OT.Assessment.Shared.Data.Implementation;
 using OT.Assessment.Shared.Data.Interfaces;
+using OT.Assessment.Shared.Messaging;
+using OT.Assessment.Shared.Messaging.Implementation;
+using OT.Assessment.Shared.Messaging.Interfaces;
 using OT.Assessment.Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,10 +22,13 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddDbContext<CasinoWagersDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("OT.Assessment.Consumer")));
-builder.Services.AddScoped<ICasinoWagerPublishService, CasinoWagerPublishService>();
+builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection("RabbitMq"));
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<ICasinoWagerRepository, CasinoWagerRepository>();
 builder.Services.AddScoped<ICasinoWagerApiService, CasinoWagerApiService>();
+builder.Services.AddSingleton<IRabbitMqConnectionManager, RabbitMqConnectionManager>();
+builder.Services.AddSingleton<IRabbitMqChannelFactory, RabbitMqChannelFactory>();
+builder.Services.AddScoped<ICasinoWagerPublishService, CasinoWagerPublishService>();
 
 var app = builder.Build();
 
