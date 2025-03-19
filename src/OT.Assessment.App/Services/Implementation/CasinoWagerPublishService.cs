@@ -1,6 +1,9 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using OT.Assessment.App.Services.Interfaces;
+using OT.Assessment.Shared.Messaging;
+using OT.Assessment.Shared.Messaging.Interfaces;
 using OT.Assessment.Shared.Models;
 using RabbitMQ.Client;
 
@@ -8,18 +11,14 @@ namespace OT.Assessment.App.Services.Implementation;
 
 public class CasinoWagerPublishService : ICasinoWagerPublishService
 {
-    private readonly string _queueName;
-    private readonly string _hostName;
-    private readonly string _userName;
-    private readonly string _password;
     private readonly ILogger<CasinoWagerPublishService> _logger;
-    public CasinoWagerPublishService(IConfiguration configuration, ILogger<CasinoWagerPublishService> logger)
+    private readonly IRabbitMqChannelFactory _channelFactory;
+    private readonly RabbitMqConfiguration _config;
+    public CasinoWagerPublishService(ILogger<CasinoWagerPublishService> logger, IRabbitMqChannelFactory channelFactory, IOptions<RabbitMqConfiguration> configuration)
     {
-        _queueName = configuration["RabbitMq:QueueName"];
-        _hostName = configuration["RabbitMq:HostName"];
-        _userName = configuration["RabbitMq:UserName"];
-        _password = configuration["RabbitMq:Password"];
         _logger = logger;
+        _channelFactory = channelFactory;
+        _config = configuration.Value;
     }
 
     public async Task PublishAsync(CasinoWagerRequest request)
@@ -34,17 +33,9 @@ public class CasinoWagerPublishService : ICasinoWagerPublishService
             AccountId = request.AccountId,
             Username = request.Username
         };
-        var factory = new ConnectionFactory()
-        {
-            HostName = _hostName,
-            UserName = _userName,
-            Password = _password,
-        };
-        using var connection = await factory.CreateConnectionAsync();
-        using var channel = await connection.CreateChannelAsync();
-        await channel.QueueDeclareAsync(queue: _queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+        using var channel = await _channelFactory.CreateChannelAsync();
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto));
-        await channel.BasicPublishAsync(exchange: string.Empty, routingKey: _queueName, body: body);
+        await channel.BasicPublishAsync(exchange: _config.ExchangeName, routingKey: _config.RoutingKey, body: body);
         _logger.LogInformation($" [x] Sent casino wager to queue [ID: {request.WagerId}]");
     }
 }
